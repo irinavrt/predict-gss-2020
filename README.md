@@ -1,2 +1,1 @@
-# predict-gss-2020
-Repository with the estimates of widely acceptable argument advantage scores for 94 GSS moral items used for prediction of future public opinion change. 
+Repository with the data and code for the manuscript "Predicting how the U.S. public opinion on moral issues will change from 2018 to 2020 and beyond" by P. Strimling, I. Vartanova, and K. Eriksson. 
