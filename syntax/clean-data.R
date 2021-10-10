@@ -6,9 +6,10 @@ library(labelled)
 
 # GSS ---------------------------------------------------------------------
 
-gss_full <- read_sav("../data/GSS7218_R3.sav")
+gss_full <- read_sav("data/GSS7218_R3.sav")
+issue_list <- read_csv("data/issue-list.csv")
 
-issue_items <- issue_list$issue[issue_list$asked_after_2010 == 1]
+# Dropped unused issues from the issue list (not asked in 2010)
 
 gss <- gss_full %>%
   rename_all(tolower) 
@@ -29,51 +30,23 @@ gss <- gss %>%
          poleff13, poleff15, polefy13, polefy15,
          sex, age, race, class, region,  finrela, income, rincome, income16, income, rincome, income16,
          relig, attend, god, reliten,
-         one_of(issue_items))
+         one_of(issue_list$issue))
 
 gss <- gss %>% 
-  mutate(othshelp_dub = othshelp,
-         careself_dub = careself) %>% 
-  mutate_at(vars(id, wtssall, oversamp, age, educ, year, polviews,
-                 othshelp_dub, careself_dub, 
-                 peoptrbl:helpjob), zap_labels) %>% 
+  mutate_at(vars(id, wtssall, oversamp, age, educ, year, polviews), zap_labels) %>% 
   mutate_if(is.labelled, ~fct_relabel(as_factor(.), tolower)) %>% 
   mutate(birth_year = year - age,
          polviews_cont = polviews,
          polviews = cut(polviews, c(0, 3, 4, 7), 
                         labels = c("liberal", "moderate", "conservative")),
          year_r = (year - 1972)/10,
-         wgt = wtssall*oversamp) %>% 
-  mutate_at(vars(othshelp_dub, peoptrbl),
-            funs((5 - .)/4)) %>% 
-  mutate_at(vars(givblood:helpjob),
-            funs((6 - .)/5)) %>% 
-  mutate(selffrst = (selffrst - 1)/4,
-         careself_dub = (careself_dub - 1)/4,
-         selfless = (6 - selfless)/5)
-
-gss <- gss %>% 
-  mutate(oth_att = rowMeans(select(., othshelp_dub, peoptrbl, selffrst)),
-         oth_att_full = rowMeans(select(., othshelp_dub, careself_dub, peoptrbl, selffrst)),
-         oth_behave = rowMeans(select(., givhmlss, retchnge, cutahead, 
-                                  volchrty, givseat,  
-                                  carried, directns, loanitem, helphwrk, 
-                                  lentto)),
-         oth_behave_full = rowMeans(select(., givblood:helpjob)),
-         oth_netw_b = rowMeans(select(., helphwrk, lentto, talkedto, helpjob)),
-         oth_strng_b = rowMeans(select(., givhmlss, retchnge, cutahead, 
-                                       volchrty, givseat,  helpaway,
-                                       carried, directns, loanitem))) %>% 
-  # none did all behaviors, devide by max to standardize
-  mutate_at(vars(oth_behave, oth_behave_full, oth_netw_b, oth_strng_b),
-            ~./max(., na.rm = TRUE))
+         wgt = wtssall*oversamp) 
 
 
 # Recoding levels that are not used
 gss <- gss %>% 
   mutate(class = fct_recode(class, NULL = "no class"),
          homosex = fct_recode(homosex, NULL = "other"),
-         racchng = fct_recode(racchng, NULL = "wdnt belong"),
          racopen = fct_recode(racopen, NULL = "neither"),
          sexeduc = fct_recode(sexeduc, NULL = "depends"),
          relig = fct_lump(relig, prop = .05),
@@ -114,25 +87,21 @@ gss_bin <- gss %>%
   select(id, year, year_r, wgt,
          polviews, polviews_cont, partyid, 
          wordsum, degree, educ, 
-         oth_att, oth_behave, oth_att_full, oth_behave_full, 
-         oth_netw_b, oth_strng_b,
          matches("talkpol"), discpol, poldisgn,
          poleff13, poleff15, polefy13, polefy15,
          relig, attend, god, reliten,
          sex, age, birth_year, race, class, region, finrela, income, rincome, income16, 
-         one_of(issue_items)) %>% 
+         one_of(issue_list$issue)) %>% 
   mutate(pornlaw = ifelse(pornlaw == "legal", 0 , 1), 
          paidlvdv = ifelse(as.numeric(paidlvdv) < 3, 0, 1)) %>% 
-  mutate_at(issue_items[!issue_items  %in% c("pornlaw", "paidlvdv")], dichotomize)
+  mutate_at(issue_list$issue[!issue_list$issue  %in% c("pornlaw", "paidlvdv")], dichotomize)
 
-# add proportion of liberals
-gss_bin <- gss_bin %>% 
-  group_by(region) %>% 
-  mutate(liberals_prop = weighted.mean(polviews == "liberal",
-                                       na.rm = TRUE,
-                                       wgt)) %>% 
-  ungroup() 
+# Save 2018 sample for analysis of the sampling error
+gss_2018 <- gss_bin %>% 
+  filter(year == 2018) %>% 
+  select(id, year, wgt, abany:wrksch)
 
+write_rds(gss_2018, "data/gss-issp-individual-data-2018.rds")
 
 gss_bin <- gss_bin %>% 
   gather(issue, opinion, abany:givinffor) 
