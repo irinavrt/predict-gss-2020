@@ -42,42 +42,13 @@ inv_logit <- inv_logit <- function(log_odds){
 
 ```{r arg_sample}
 
-mf_data <- mf_data %>% 
-  filter(issue %in% gss_aggr$issue)
-
-new_issues <- mf_data$issue[mf_data$version == "new issues"]
-
-length(new_issues)
-
-sample_sub <- sample %>% 
- filter(issue %in% new_issues)
-
-sample_sub %>%
+sample %>%
   count(issue) %>% 
   summarise(min(n), max(n), mean(n), sum(n))
 
-sample_sub %>% 
+sample %>% 
   mutate(age = as.numeric(age)) %>% 
   summarise(mean(age), sd(age), 
-            mean(sex == "Female", na.rm = TRUE))
-
-sample_sub %>% 
-  mutate(age = as.numeric(age),
-         polviews = as.numeric(polviews),
-         polviews = cut(polviews, c(-1, 3, 6, 10))) %>% 
-  count(polviews) %>% 
-  mutate(n/sum(n))
-
-sample_sub %>% 
-  group_by(id, sex, age, polviews) %>% 
-  summarise(n = n(), .groups = "drop") %>% 
-  count(n)
-
-sample_sub %>% 
-  group_by(id, sex, age, polviews) %>% 
-  summarise(n = n(), .groups = "drop") %>% 
-  mutate(age = as.numeric(age)) %>% 
-  summarise(n_distinct(id), mean(age), sd(age), 
             mean(sex == "Female", na.rm = TRUE))
 
 ```
@@ -192,12 +163,6 @@ test_fc <- test_fc %>%
 
 ```{r accuracy}
 
-# accuracy <- test_fc %>% 
-#   group_by(last_year) %>% 
-#   summarise_at(vars(starts_with("fc")),
-#                list(msd = ~mean((mean_opin - .)^2),
-#                     mae = ~mean(abs(mean_opin - .))))
-
 accuracy <- test_fc %>% 
   group_by(last_year) %>% 
   summarise(across(starts_with("fc"), ~mean((mean_opin - .)^2)))
@@ -206,6 +171,8 @@ accuracy <- test_fc %>%
 
 
 ```{r sampling_error}
+
+# Bootstrap GSS 2018 sample for random draws of sampling error
 
 draw_e <- function(i){
   
@@ -254,6 +221,7 @@ conf_int_diff <- test_fc_e %>%
 ```{r tbl1}
 
 # alphas and betas to display in the table
+
 lm_coefs <- lm_coefs %>% 
   select(last_year, term, estimate) %>% 
   pivot_wider(names_from = "term",
@@ -291,7 +259,6 @@ tbl_data %>%
 ```
 
 
-# 3. Predictions
 
 ```{r fig2, fig.width = 7, fig.height = 7, fig.cap = "Figure 2. The change in the popularity of 63 moral opinions in the United States from 2010 to 2018 as observed in GSS polls (green arrows) and as predicted from argument advantage measures (black arrows). The items are abbreviated in the figure. For the full text of items, see Supplementary Table 1."}
 
@@ -416,7 +383,7 @@ pl3 <- pl_data %>%
   theme(axis.text.y = element_text(size = 9)) +
   labs(x = NULL, y = "Forecast", color = NULL)
 pl3
-#ggsave("fig3_forecast.jpeg", pl3, width = 7, height = 9.5, dpi = 350)
+# ggsave("fig3_forecast.jpeg", pl3, width = 7, height = 9.5, dpi = 350)
 
 ```
 
@@ -478,14 +445,14 @@ pl <- gss_aggr %>%
   geom_point(data = gss_aggr %>% group_by(issue) %>% filter(n() == 1), size = .8) +
   facet_wrap(~issue, ncol = 6) +
   geom_ribbon(data = filter(gss_fc, fc_year > 2018),
-              #filter(fcst_2020_pl, issue %in% levels(fcst_2020_pl$issue)[1:30]),
               aes(x = fc_year, y = forecast, ymin = lwr_50, ymax = upr_50), fill = "#CC99FF") +
-  geom_line(data = filter(gss_fc, fc_year > 2018), #filter(fcst_2020_pl, issue %in% levels(fcst_2020_pl$issue)[1:30]), 
+  geom_line(data = filter(gss_fc, fc_year > 2018),  
             aes(x = fc_year, y = forecast), color = "#663399", size = .8) +
   scale_x_continuous(limits = c(1972, 2030), breaks = seq(1970, 2030, 20)) +
   labs(x = NULL, y = NULL)   +
   theme_bw()
 pl
-#ggsave("suppl_fig2.jpeg", pl, dpi = 350, width = 10, height = 15)
+# ggsave("suppl_fig2.jpeg", pl, dpi = 350, width = 10, height = 15)
+
 
 ```

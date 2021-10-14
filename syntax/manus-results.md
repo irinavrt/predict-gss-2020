@@ -12,10 +12,6 @@ output:
 
 
 ```
-## [1] 27
-```
-
-```
 ## # A tibble: 1 x 4
 ##   `min(n)` `max(n)` `mean(n)` `sum(n)`
 ##      <int>    <int>     <dbl>    <int>
@@ -27,38 +23,6 @@ output:
 ##   `mean(age)` `sd(age)` `mean(sex == "Female", na.rm = TRUE)`
 ##         <dbl>     <dbl>                                 <dbl>
 ## 1        36.0      12.5                                 0.592
-```
-
-```
-## # A tibble: 3 x 3
-##   polviews     n `n/sum(n)`
-##   <fct>    <int>      <dbl>
-## 1 (-1,3]    1421      0.507
-## 2 (3,6]      909      0.324
-## 3 (6,10]     475      0.169
-```
-
-```
-## # A tibble: 10 x 2
-##        n    nn
-##    <int> <int>
-##  1     1   154
-##  2     2   239
-##  3     3   257
-##  4     4   141
-##  5     5   130
-##  6     6    12
-##  7     7     9
-##  8     8     2
-##  9     9     3
-## 10    10     1
-```
-
-```
-## # A tibble: 1 x 4
-##   `n_distinct(id)` `mean(age)` `sd(age)` `mean(sex == "Female", na.rm = TRUE)`
-##              <int>       <dbl>     <dbl>                                 <dbl>
-## 1              945        36.3      12.6                                 0.586
 ```
 
 ## 2.2 Forecasting shifts of public opinion on moral issues
@@ -100,8 +64,8 @@ output:
    <td style="text-align:right;"> 44.9 </td>
    <td style="text-align:right;"> 27.8 </td>
    <td style="text-align:right;"> 19.9 </td>
-   <td style="text-align:left;"> 25.0 [19.4, 30.3] </td>
-   <td style="text-align:left;"> 7.9 [4.3, 11.1] </td>
+   <td style="text-align:left;"> 25.0 [19.4, 30.4] </td>
+   <td style="text-align:left;"> 7.9 [4.4, 11.2] </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2012 </td>
@@ -110,7 +74,7 @@ output:
    <td style="text-align:right;"> 27.8 </td>
    <td style="text-align:right;"> 25.1 </td>
    <td style="text-align:left;"> 19.6 [15.5, 23.5] </td>
-   <td style="text-align:left;"> 2.7 [0.1, 5.2] </td>
+   <td style="text-align:left;"> 2.6 [0.0, 5.1] </td>
   </tr>
   <tr>
    <td style="text-align:right;"> 2014 </td>
@@ -134,7 +98,6 @@ output:
 </table>
 
 
-# 3. Predictions
 
 <div class="figure" style="text-align: center">
 <img src="manus-results_files/figure-html/fig2-1.jpeg" alt="Figure 2. The change in the popularity of 63 moral opinions in the United States from 2010 to 2018 as observed in GSS polls (green arrows) and as predicted from argument advantage measures (black arrows). The items are abbreviated in the figure. For the full text of items, see Supplementary Table 1." width="60%" />
@@ -146,7 +109,7 @@ output:
 
 ```
 ## (Intercept)          aa 
-## 0.008079753 0.216788344
+## 0.007924077 0.217443898
 ```
 
 
@@ -189,11 +152,11 @@ output:
    <td style="text-align:right;"> -0.16 </td>
    <td style="text-align:left;"> 0.94 (2018) </td>
    <td style="text-align:left;"> 0.94 [0.93, 0.95] </td>
-   <td style="text-align:left;"> 0.94 [0.92, 0.96] </td>
+   <td style="text-align:left;"> 0.94 [0.92, 0.95] </td>
    <td style="text-align:left;"> 0.94 [0.92, 0.96] </td>
    <td style="text-align:left;"> 0.94 [0.91, 0.96] </td>
    <td style="text-align:left;"> 0.94 [0.90, 0.96] </td>
-   <td style="text-align:left;"> 0.94 [0.90, 0.96] </td>
+   <td style="text-align:left;"> 0.93 [0.90, 0.96] </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Primary duty is to help self and family </td>
@@ -205,7 +168,7 @@ output:
    <td style="text-align:left;"> 0.93 [0.91, 0.95] </td>
    <td style="text-align:left;"> 0.93 [0.90, 0.95] </td>
    <td style="text-align:left;"> 0.93 [0.90, 0.95] </td>
-   <td style="text-align:left;"> 0.93 [0.89, 0.96] </td>
+   <td style="text-align:left;"> 0.93 [0.89, 0.95] </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Relative marrying white person </td>
@@ -330,14 +293,14 @@ output:
   <tr>
    <td style="text-align:left;"> Both husband &amp; wife should have incomes </td>
    <td style="text-align:left;"> twoincs </td>
-   <td style="text-align:right;"> 0.02 </td>
+   <td style="text-align:right;"> 0.11 </td>
    <td style="text-align:left;"> 0.86 (2012) </td>
-   <td style="text-align:left;"> 0.87 [0.81, 0.91] </td>
-   <td style="text-align:left;"> 0.87 [0.81, 0.91] </td>
-   <td style="text-align:left;"> 0.87 [0.80, 0.92] </td>
-   <td style="text-align:left;"> 0.87 [0.80, 0.92] </td>
-   <td style="text-align:left;"> 0.87 [0.80, 0.92] </td>
-   <td style="text-align:left;"> 0.87 [0.79, 0.93] </td>
+   <td style="text-align:left;"> 0.88 [0.83, 0.91] </td>
+   <td style="text-align:left;"> 0.88 [0.82, 0.92] </td>
+   <td style="text-align:left;"> 0.88 [0.82, 0.92] </td>
+   <td style="text-align:left;"> 0.89 [0.82, 0.93] </td>
+   <td style="text-align:left;"> 0.89 [0.82, 0.93] </td>
+   <td style="text-align:left;"> 0.89 [0.82, 0.94] </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Should help less fortunate friends </td>
@@ -491,7 +454,7 @@ output:
    <td style="text-align:left;"> 0.79 [0.76, 0.82] </td>
    <td style="text-align:left;"> 0.80 [0.75, 0.84] </td>
    <td style="text-align:left;"> 0.81 [0.75, 0.85] </td>
-   <td style="text-align:left;"> 0.81 [0.74, 0.87] </td>
+   <td style="text-align:left;"> 0.81 [0.74, 0.86] </td>
    <td style="text-align:left;"> 0.82 [0.74, 0.87] </td>
    <td style="text-align:left;"> 0.82 [0.74, 0.88] </td>
   </tr>
@@ -524,7 +487,7 @@ output:
    <td style="text-align:left;"> wrldgovt </td>
    <td style="text-align:right;"> -0.02 </td>
    <td style="text-align:left;"> 0.77 (2014) </td>
-   <td style="text-align:left;"> 0.77 [0.70, 0.83] </td>
+   <td style="text-align:left;"> 0.77 [0.70, 0.82] </td>
    <td style="text-align:left;"> 0.77 [0.69, 0.83] </td>
    <td style="text-align:left;"> 0.77 [0.68, 0.84] </td>
    <td style="text-align:left;"> 0.77 [0.68, 0.85] </td>
@@ -597,8 +560,8 @@ output:
    <td style="text-align:right;"> -0.23 </td>
    <td style="text-align:left;"> 0.75 (2012) </td>
    <td style="text-align:left;"> 0.72 [0.64, 0.79] </td>
-   <td style="text-align:left;"> 0.71 [0.62, 0.79] </td>
-   <td style="text-align:left;"> 0.70 [0.60, 0.79] </td>
+   <td style="text-align:left;"> 0.71 [0.61, 0.79] </td>
+   <td style="text-align:left;"> 0.70 [0.59, 0.79] </td>
    <td style="text-align:left;"> 0.70 [0.58, 0.79] </td>
    <td style="text-align:left;"> 0.69 [0.56, 0.79] </td>
    <td style="text-align:left;"> 0.68 [0.54, 0.79] </td>
@@ -681,7 +644,7 @@ output:
    <td style="text-align:right;"> 0.21 </td>
    <td style="text-align:left;"> 0.66 (2012) </td>
    <td style="text-align:left;"> 0.70 [0.61, 0.78] </td>
-   <td style="text-align:left;"> 0.71 [0.62, 0.80] </td>
+   <td style="text-align:left;"> 0.71 [0.62, 0.79] </td>
    <td style="text-align:left;"> 0.72 [0.62, 0.81] </td>
    <td style="text-align:left;"> 0.74 [0.62, 0.82] </td>
    <td style="text-align:left;"> 0.75 [0.63, 0.84] </td>
@@ -721,7 +684,7 @@ output:
    <td style="text-align:left;"> 0.64 [0.56, 0.71] </td>
    <td style="text-align:left;"> 0.63 [0.53, 0.71] </td>
    <td style="text-align:left;"> 0.62 [0.51, 0.71] </td>
-   <td style="text-align:left;"> 0.60 [0.49, 0.71] </td>
+   <td style="text-align:left;"> 0.60 [0.48, 0.71] </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Legalize marijuana </td>
@@ -757,18 +720,18 @@ output:
    <td style="text-align:left;"> 0.65 [0.56, 0.73] </td>
    <td style="text-align:left;"> 0.65 [0.55, 0.74] </td>
    <td style="text-align:left;"> 0.65 [0.53, 0.75] </td>
-   <td style="text-align:left;"> 0.65 [0.53, 0.76] </td>
+   <td style="text-align:left;"> 0.65 [0.52, 0.76] </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Police may sometimes hit male citizens </td>
    <td style="text-align:left;"> polhitok </td>
-   <td style="text-align:right;"> -0.13 </td>
+   <td style="text-align:right;"> -0.12 </td>
    <td style="text-align:left;"> 0.64 (2018) </td>
    <td style="text-align:left;"> 0.64 [0.59, 0.68] </td>
    <td style="text-align:left;"> 0.63 [0.56, 0.69] </td>
    <td style="text-align:left;"> 0.63 [0.54, 0.70] </td>
    <td style="text-align:left;"> 0.62 [0.53, 0.71] </td>
-   <td style="text-align:left;"> 0.62 [0.51, 0.72] </td>
+   <td style="text-align:left;"> 0.62 [0.51, 0.71] </td>
    <td style="text-align:left;"> 0.61 [0.49, 0.72] </td>
   </tr>
   <tr>
@@ -815,9 +778,9 @@ output:
    <td style="text-align:left;"> 0.59 [0.50, 0.67] </td>
    <td style="text-align:left;"> 0.58 [0.49, 0.67] </td>
    <td style="text-align:left;"> 0.58 [0.47, 0.68] </td>
-   <td style="text-align:left;"> 0.57 [0.45, 0.69] </td>
+   <td style="text-align:left;"> 0.57 [0.45, 0.68] </td>
    <td style="text-align:left;"> 0.57 [0.44, 0.69] </td>
-   <td style="text-align:left;"> 0.56 [0.43, 0.69] </td>
+   <td style="text-align:left;"> 0.56 [0.42, 0.69] </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Govt. should raise living stds of poor </td>
@@ -838,7 +801,7 @@ output:
    <td style="text-align:left;"> 0.57 (2018) </td>
    <td style="text-align:left;"> 0.57 [0.52, 0.62] </td>
    <td style="text-align:left;"> 0.57 [0.50, 0.64] </td>
-   <td style="text-align:left;"> 0.58 [0.49, 0.66] </td>
+   <td style="text-align:left;"> 0.57 [0.49, 0.66] </td>
    <td style="text-align:left;"> 0.58 [0.48, 0.67] </td>
    <td style="text-align:left;"> 0.58 [0.47, 0.68] </td>
    <td style="text-align:left;"> 0.58 [0.46, 0.69] </td>
@@ -853,7 +816,7 @@ output:
    <td style="text-align:left;"> 0.57 [0.49, 0.65] </td>
    <td style="text-align:left;"> 0.58 [0.48, 0.67] </td>
    <td style="text-align:left;"> 0.58 [0.47, 0.68] </td>
-   <td style="text-align:left;"> 0.58 [0.46, 0.70] </td>
+   <td style="text-align:left;"> 0.58 [0.46, 0.69] </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Abortion due to poverty is wrong </td>
@@ -863,7 +826,7 @@ output:
    <td style="text-align:left;"> 0.56 [0.51, 0.60] </td>
    <td style="text-align:left;"> 0.56 [0.49, 0.62] </td>
    <td style="text-align:left;"> 0.56 [0.47, 0.64] </td>
-   <td style="text-align:left;"> 0.56 [0.46, 0.65] </td>
+   <td style="text-align:left;"> 0.55 [0.46, 0.65] </td>
    <td style="text-align:left;"> 0.55 [0.44, 0.66] </td>
    <td style="text-align:left;"> 0.55 [0.43, 0.67] </td>
   </tr>
@@ -909,7 +872,7 @@ output:
    <td style="text-align:right;"> -0.11 </td>
    <td style="text-align:left;"> 0.49 (2016) </td>
    <td style="text-align:left;"> 0.48 [0.42, 0.55] </td>
-   <td style="text-align:left;"> 0.48 [0.40, 0.57] </td>
+   <td style="text-align:left;"> 0.48 [0.40, 0.56] </td>
    <td style="text-align:left;"> 0.48 [0.38, 0.57] </td>
    <td style="text-align:left;"> 0.47 [0.37, 0.58] </td>
    <td style="text-align:left;"> 0.47 [0.35, 0.59] </td>
@@ -947,7 +910,7 @@ output:
    <td style="text-align:left;"> 0.46 [0.37, 0.54] </td>
    <td style="text-align:left;"> 0.45 [0.36, 0.55] </td>
    <td style="text-align:left;"> 0.45 [0.35, 0.56] </td>
-   <td style="text-align:left;"> 0.45 [0.34, 0.57] </td>
+   <td style="text-align:left;"> 0.45 [0.33, 0.57] </td>
    <td style="text-align:left;"> 0.45 [0.32, 0.58] </td>
    <td style="text-align:left;"> 0.44 [0.31, 0.58] </td>
   </tr>
@@ -980,7 +943,7 @@ output:
    <td style="text-align:left;"> absingle </td>
    <td style="text-align:right;"> 0.08 </td>
    <td style="text-align:left;"> 0.45 (2018) </td>
-   <td style="text-align:left;"> 0.46 [0.41, 0.51] </td>
+   <td style="text-align:left;"> 0.46 [0.41, 0.50] </td>
    <td style="text-align:left;"> 0.46 [0.39, 0.53] </td>
    <td style="text-align:left;"> 0.47 [0.39, 0.55] </td>
    <td style="text-align:left;"> 0.47 [0.38, 0.57] </td>
@@ -1018,7 +981,7 @@ output:
    <td style="text-align:left;"> 0.43 (2018) </td>
    <td style="text-align:left;"> 0.43 [0.38, 0.48] </td>
    <td style="text-align:left;"> 0.44 [0.37, 0.50] </td>
-   <td style="text-align:left;"> 0.44 [0.36, 0.53] </td>
+   <td style="text-align:left;"> 0.44 [0.36, 0.52] </td>
    <td style="text-align:left;"> 0.44 [0.35, 0.54] </td>
    <td style="text-align:left;"> 0.45 [0.34, 0.56] </td>
    <td style="text-align:left;"> 0.45 [0.34, 0.57] </td>
@@ -1031,7 +994,7 @@ output:
    <td style="text-align:left;"> 0.41 [0.34, 0.47] </td>
    <td style="text-align:left;"> 0.40 [0.32, 0.49] </td>
    <td style="text-align:left;"> 0.40 [0.31, 0.50] </td>
-   <td style="text-align:left;"> 0.40 [0.30, 0.51] </td>
+   <td style="text-align:left;"> 0.40 [0.30, 0.50] </td>
    <td style="text-align:left;"> 0.39 [0.29, 0.51] </td>
    <td style="text-align:left;"> 0.39 [0.28, 0.52] </td>
   </tr>
@@ -1040,7 +1003,7 @@ output:
    <td style="text-align:left;"> amtv </td>
    <td style="text-align:right;"> -0.24 </td>
    <td style="text-align:left;"> 0.43 (2014) </td>
-   <td style="text-align:left;"> 0.40 [0.32, 0.48] </td>
+   <td style="text-align:left;"> 0.39 [0.32, 0.48] </td>
    <td style="text-align:left;"> 0.38 [0.30, 0.48] </td>
    <td style="text-align:left;"> 0.37 [0.28, 0.48] </td>
    <td style="text-align:left;"> 0.36 [0.26, 0.48] </td>
@@ -1066,10 +1029,10 @@ output:
    <td style="text-align:left;"> 0.40 (2014) </td>
    <td style="text-align:left;"> 0.38 [0.31, 0.47] </td>
    <td style="text-align:left;"> 0.38 [0.29, 0.48] </td>
-   <td style="text-align:left;"> 0.38 [0.28, 0.48] </td>
+   <td style="text-align:left;"> 0.37 [0.28, 0.48] </td>
    <td style="text-align:left;"> 0.37 [0.27, 0.49] </td>
    <td style="text-align:left;"> 0.37 [0.26, 0.49] </td>
-   <td style="text-align:left;"> 0.36 [0.25, 0.50] </td>
+   <td style="text-align:left;"> 0.36 [0.24, 0.50] </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Parental leave should be shared equally </td>
@@ -1080,7 +1043,7 @@ output:
    <td style="text-align:left;"> 0.40 [0.30, 0.51] </td>
    <td style="text-align:left;"> 0.41 [0.30, 0.53] </td>
    <td style="text-align:left;"> 0.42 [0.30, 0.55] </td>
-   <td style="text-align:left;"> 0.43 [0.30, 0.57] </td>
+   <td style="text-align:left;"> 0.43 [0.30, 0.56] </td>
    <td style="text-align:left;"> 0.43 [0.30, 0.58] </td>
   </tr>
   <tr>
@@ -1213,7 +1176,7 @@ output:
    <td style="text-align:left;"> 0.26 [0.19, 0.36] </td>
    <td style="text-align:left;"> 0.26 [0.18, 0.36] </td>
    <td style="text-align:left;"> 0.25 [0.17, 0.36] </td>
-   <td style="text-align:left;"> 0.25 [0.16, 0.36] </td>
+   <td style="text-align:left;"> 0.24 [0.16, 0.36] </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Remove communist book from library </td>
@@ -1246,7 +1209,7 @@ output:
    <td style="text-align:left;"> 0.24 (2018) </td>
    <td style="text-align:left;"> 0.24 [0.20, 0.27] </td>
    <td style="text-align:left;"> 0.23 [0.18, 0.28] </td>
-   <td style="text-align:left;"> 0.22 [0.17, 0.29] </td>
+   <td style="text-align:left;"> 0.22 [0.17, 0.28] </td>
    <td style="text-align:left;"> 0.21 [0.15, 0.29] </td>
    <td style="text-align:left;"> 0.21 [0.14, 0.29] </td>
    <td style="text-align:left;"> 0.20 [0.13, 0.29] </td>
@@ -1285,19 +1248,19 @@ output:
    <td style="text-align:left;"> 0.25 [0.18, 0.34] </td>
    <td style="text-align:left;"> 0.26 [0.18, 0.36] </td>
    <td style="text-align:left;"> 0.27 [0.18, 0.38] </td>
-   <td style="text-align:left;"> 0.28 [0.18, 0.40] </td>
+   <td style="text-align:left;"> 0.27 [0.18, 0.40] </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Men should work, women domestic duties </td>
    <td style="text-align:left;"> hubbywrk </td>
-   <td style="text-align:right;"> -0.29 </td>
+   <td style="text-align:right;"> -0.31 </td>
    <td style="text-align:left;"> 0.23 (2018) </td>
    <td style="text-align:left;"> 0.22 [0.19, 0.25] </td>
-   <td style="text-align:left;"> 0.21 [0.17, 0.26] </td>
+   <td style="text-align:left;"> 0.21 [0.16, 0.26] </td>
    <td style="text-align:left;"> 0.20 [0.15, 0.26] </td>
    <td style="text-align:left;"> 0.19 [0.14, 0.26] </td>
-   <td style="text-align:left;"> 0.18 [0.13, 0.26] </td>
-   <td style="text-align:left;"> 0.18 [0.12, 0.26] </td>
+   <td style="text-align:left;"> 0.18 [0.12, 0.25] </td>
+   <td style="text-align:left;"> 0.17 [0.11, 0.25] </td>
   </tr>
   <tr>
    <td style="text-align:left;"> Right to suicide when ready to die </td>
@@ -1318,9 +1281,9 @@ output:
    <td style="text-align:left;"> 0.20 (2018) </td>
    <td style="text-align:left;"> 0.20 [0.17, 0.23] </td>
    <td style="text-align:left;"> 0.19 [0.15, 0.24] </td>
-   <td style="text-align:left;"> 0.19 [0.14, 0.24] </td>
+   <td style="text-align:left;"> 0.18 [0.14, 0.24] </td>
    <td style="text-align:left;"> 0.18 [0.13, 0.24] </td>
-   <td style="text-align:left;"> 0.17 [0.12, 0.25] </td>
+   <td style="text-align:left;"> 0.17 [0.12, 0.24] </td>
    <td style="text-align:left;"> 0.17 [0.11, 0.25] </td>
   </tr>
   <tr>
@@ -1341,7 +1304,7 @@ output:
    <td style="text-align:right;"> -0.29 </td>
    <td style="text-align:left;"> 0.16 (2018) </td>
    <td style="text-align:left;"> 0.15 [0.13, 0.18] </td>
-   <td style="text-align:left;"> 0.15 [0.12, 0.19] </td>
+   <td style="text-align:left;"> 0.15 [0.12, 0.18] </td>
    <td style="text-align:left;"> 0.14 [0.10, 0.19] </td>
    <td style="text-align:left;"> 0.13 [0.09, 0.19] </td>
    <td style="text-align:left;"> 0.13 [0.09, 0.18] </td>
