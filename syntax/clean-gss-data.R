@@ -101,3 +101,34 @@ gss_aggr <- gss_bin %>%
 write_rds(gss_aggr, "data/gss-issp-trends-to-predict.rds")
 
 
+# 2021 GSS ----------------------------------------------------------------
+
+gss_21 <- read_stata("data/gss2021.dta")
+
+gss_21 <- gss_21 %>% 
+  # rename the items without volunteered response to match names from previous GSS
+  rename(racopen = racopennv, grass = grassnv) %>% 
+  # drop police items for the experimental Y form (with alternative gender neutral wording)
+  mutate(polmurdr = ifelse(form == 1, polmurdr, NA_real_),
+         polescap = ifelse(form == 1, polescap, NA_real_)) %>% 
+  select(id, year, wgt = wtssps, one_of(issue_list$issue))
+
+gss_21_bin <- gss_21 %>% 
+  mutate(pornlaw = ifelse(pornlaw == 3, 0, 1), 
+         racopen = na_if(racopen, 3),
+         across(c(abany:polmurdr, premarsx:xmarsex), dichotomize))
+
+write_rds(gss_21_bin, "data/gss-issp-individual-data-2021.rds")
+
+gss_21_bin <- gss_21_bin %>% 
+  gather(issue, opinion, abany:xmarsex) 
+
+gss_21_aggr <- gss_21_bin %>% 
+  drop_na(opinion) %>%
+  group_by(issue, year) %>%
+  summarise(mean_opin = weighted.mean(opinion, wgt),
+            mean_opin_no_wgt = mean(opinion),
+            .groups = "drop")
+
+write_rds(gss_21_aggr, "data/gss-issp-2021.rds")
+
