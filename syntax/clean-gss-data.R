@@ -47,8 +47,10 @@ gss <- gss %>% droplevels()
 
 #dichotomize variable
 
+
 dichotomize <- function(var){
-  n_categories = n_distinct(var, na.rm = TRUE)
+  if(min(var, na.rm = TRUE) > 1) var <- var - min(var, na.rm = TRUE) + 1
+  n_categories <- n_distinct(var, na.rm = TRUE)
   # for already binary items recode "yes" (1st level) to 1 and "no" to 0
   if(n_categories == 2){
     return(2 - as.numeric(var))
