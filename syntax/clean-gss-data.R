@@ -23,35 +23,20 @@ gss <- gss %>%
          homosex = coalesce(homosex, homosex1),
          premars = coalesce(premarsx, premars1),
          xmarsex = coalesce(xmarsex, xmarsex1)) %>% 
-  select(id, year, wtssall, formwt, sample, oversamp,
-         polviews, partyid, wordsum, degree, educ, 
-         talkpol, talkpol1, talkpol2, talkpol3,
-         discpol, poldisgn, chat12, polinf12,
-         poleff13, poleff15, polefy13, polefy15,
-         sex, age, race, class, region,  finrela, income, rincome, income16, income, rincome, income16,
-         relig, attend, god, reliten,
+  select(id, year, wtssall, formwt, oversamp,
          one_of(issue_list$issue))
 
 gss <- gss %>% 
-  mutate_at(vars(id, wtssall, oversamp, age, educ, year, polviews), zap_labels) %>% 
+  mutate_at(vars(id, wtssall, oversamp), zap_labels) %>% 
   mutate_if(is.labelled, ~fct_relabel(as_factor(.), tolower)) %>% 
-  mutate(birth_year = year - age,
-         polviews_cont = polviews,
-         polviews = cut(polviews, c(0, 3, 4, 7), 
-                        labels = c("liberal", "moderate", "conservative")),
-         year_r = (year - 1972)/10,
-         wgt = wtssall*oversamp) 
+  mutate(wgt = wtssall*oversamp) 
 
 
 # Recoding levels that are not used
 gss <- gss %>% 
-  mutate(class = fct_recode(class, NULL = "no class"),
-         homosex = fct_recode(homosex, NULL = "other"),
+  mutate(homosex = fct_recode(homosex, NULL = "other"),
          racopen = fct_recode(racopen, NULL = "neither"),
-         sexeduc = fct_recode(sexeduc, NULL = "depends"),
-         relig = fct_lump(relig, prop = .05),
-         reliten = fct_relevel(reliten, "no religion", "not very strong", 
-                               "somewhat strong", "strong")) 
+         sexeduc = fct_recode(sexeduc, NULL = "depends"))
 
 #Excluding years where racial questions were asked of non-blacks only 
 for(i in c("racmar","racpush", "racopen","racdin")) {
@@ -84,17 +69,18 @@ dichotomize <- function(var){
 }
 
 gss_bin <- gss %>% 
-  select(id, year, year_r, wgt,
-         polviews, polviews_cont, partyid, 
-         wordsum, degree, educ, 
-         matches("talkpol"), discpol, poldisgn,
-         poleff13, poleff15, polefy13, polefy15,
-         relig, attend, god, reliten,
-         sex, age, birth_year, race, class, region, finrela, income, rincome, income16, 
+  select(id, year, wgt,
          one_of(issue_list$issue)) %>% 
   mutate(pornlaw = ifelse(pornlaw == "legal", 0 , 1), 
-         paidlvdv = ifelse(as.numeric(paidlvdv) < 3, 0, 1)) %>% 
-  mutate_at(issue_list$issue[!issue_list$issue  %in% c("pornlaw", "paidlvdv")], dichotomize)
+         paidlvdv = ifelse(as.numeric(paidlvdv) < 3, 0, 1),
+         # reverse code the items to match the AA default position
+         across(c(wrksch, wrkbaby), ~ case_when(
+           . == "stay home" ~ 1,
+           . == "work full-time" ~ 0, 
+           TRUE ~ NA_real_
+         ))) %>% 
+  mutate_at(issue_list$issue[!issue_list$issue  %in% c("pornlaw", "paidlvdv", "wrksch", "wrkbaby")], 
+            dichotomize)
 
 # Save 2018 sample for analysis of the sampling error
 gss_2018 <- gss_bin %>% 
@@ -104,15 +90,12 @@ gss_2018 <- gss_bin %>%
 write_rds(gss_2018, "data/gss-issp-individual-data-2018.rds")
 
 gss_bin <- gss_bin %>% 
-  gather(issue, opinion, abany:givinffor) 
+  gather(issue, opinion, abany:wrksch) 
 
 gss_aggr <- gss_bin %>% 
   drop_na(opinion) %>%
   group_by(issue, year) %>%
   summarise(mean_opin = weighted.mean(opinion, wgt),
-            n_agree = sum(opinion*wgt),
-            n_sample = sum(wgt),
-            n_disagree = n_sample - n_agree,
             .groups = "drop")
 
 write_rds(gss_aggr, "data/gss-issp-trends-to-predict.rds")
