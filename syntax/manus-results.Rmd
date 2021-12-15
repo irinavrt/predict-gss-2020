@@ -21,8 +21,11 @@ library(kableExtra)
 gss_aggr <- read_rds("../data/gss-issp-trends-to-predict.rds")
 mf_data <- read_rds("../data/gss-issp-aa-measures.rds")
 sample <- read_rds("../data/for-sample-description.rds")
+gss_themes <- read_csv("../data/issue-themes.csv")
 
 gss_aggr <- left_join(gss_aggr, mf_data)
+
+gss_21_aggr <- read_rds("../data/gss-issp-2021.rds")
 
 # Transform public opinion variable.
 gss_aggr <- gss_aggr %>%
@@ -31,6 +34,7 @@ gss_aggr <- gss_aggr %>%
 
 # for bootstrapping sampling error
 gss_2018 <- read_rds("../data/gss-issp-individual-data-2018.rds")
+gss_2021 <- read_rds("../data/gss-issp-individual-data-2021.rds")
 
 inv_logit <- inv_logit <- function(log_odds){
   exp(log_odds)/(1 + exp(log_odds))
@@ -165,7 +169,7 @@ test_fc <- test_fc %>%
 
 accuracy <- test_fc %>% 
   group_by(last_year) %>% 
-  summarise(across(starts_with("fc"), ~mean((mean_opin - .)^2)))
+  summarise(across(c(fc_aa, fc_benchmark, fc_trends), ~mean((mean_opin - .)^2)))
 
 ```
 
@@ -241,7 +245,7 @@ tbl_data <- tbl_data %>%
                                   fc_trends - fc_aa,
                                   fc_trends - fc_aa + trends_diff_lwr,
                                   fc_trends - fc_aa + trends_diff_upr)) %>% 
-  select(last_year, coef, fc_benchmark:fc_aa, diff_benchmark, diff_trends) 
+  select(last_year, coef, fc_aa:fc_trends, diff_benchmark, diff_trends) 
 
 
 tbl_data %>% 
@@ -303,6 +307,7 @@ pl_data %>%
 
 # Estimate drift parameter c_trend (by two year shift).
 
+
 gss_drift <- gss_aggr %>%
   group_by(issue, aa) %>% 
   summarise(n = n(), 
@@ -311,7 +316,8 @@ gss_drift <- gss_aggr %>%
             last_log_odds = last(log_odds),
             c_trend = (last(log_odds) - first(log_odds))/((last(year) - first(year))/2), 
             .groups = "drop") %>% 
-  mutate(c_trend = ifelse(n == 1, NA_real_, c_trend))
+  mutate(c_trend = ifelse(n == 1, NA_real_, c_trend)) %>% 
+  arrange(issue)
 
 m <- lm(c_trend ~ aa, gss_drift)
 coef(m)
@@ -384,14 +390,252 @@ pl3 <- pl_data %>%
   labs(x = NULL, y = "Forecast", color = NULL)
 pl3
 # ggsave("fig3_forecast.jpeg", pl3, width = 7, height = 9.5, dpi = 350)
+# ggsave("fig3_forecast.eps", pl3, width = 7, height = 9.5)
 
 ```
+
+## 4. Accuracy of 2021 forecast.
+
+```{r accuracy_21}
+
+gss_aa_21 <- left_join(gss_aa, gss_21_aggr) %>% 
+  drop_na(mean_opin)
+
+gss_fc_21 <- gss_aa_21 %>% 
+  expand_grid(fc_year = 2021) %>% 
+  mutate(steps = (fc_year - last_year)/2,
+         fc_benchmark = last_log_odds,
+         fc_trends = last_log_odds + c_trend*steps,
+         fc_aa = last_log_odds + c_aa*steps) 
+
+gss_fc_21 <- gss_fc_21 %>% 
+  mutate(across(fc_benchmark:fc_aa, ~inv_logit(.)*100),  
+         across(c(last_mean_opin, mean_opin, mean_opin_no_wgt), ~100*.))
+
+gss_fc_21 <- left_join(gss_fc_21, gss_themes %>% select(issue, theme))
+
+accuracy_21 <- gss_fc_21 %>% 
+#  group_by(fc_year) %>% 
+  summarise(across(c(fc_aa, fc_benchmark, fc_trends), ~mean((mean_opin - .)^2)))
+
+accuracy_21
+
+```
+
+```{r accuracy_21_new_args}
+
+gss_aa_new_args_21 <- left_join(gss_aa_new_args, gss_21_aggr) %>% 
+  drop_na(mean_opin)
+
+gss_fc_new_args_21 <- gss_aa_new_args_21 %>% 
+  expand_grid(fc_year = 2021) %>% 
+  mutate(steps = (fc_year - last_year)/2,
+         fc_benchmark = last_log_odds,
+         fc_trends = last_log_odds + c_trend*steps,
+         fc_aa = last_log_odds + c_aa*steps) 
+
+gss_fc_new_args_21 <- gss_fc_new_args_21 %>% 
+  mutate(across(fc_benchmark:fc_aa, ~inv_logit(.)*100),  
+         across(c(last_mean_opin, mean_opin, mean_opin_no_wgt), ~100*.))
+
+
+gss_fc_new_args_21 %>% 
+#  group_by(fc_year) %>% 
+  summarise(across(c(fc_aa, fc_benchmark, fc_trends), ~mean((mean_opin - .)^2)))
+
+```
+
+```{r sampling_error_21}
+
+# Bootstrap GSS 2021 sample for random draws of sampling error
+
+draw_e_21 <- function(i){
+  
+draw_gss <- gss_2021 %>% 
+  sample_n(n(), replace = TRUE) %>% 
+  pivot_longer(c(-id, -year, -wgt), 
+               names_to = "issue", 
+               values_to = "opinion") %>% 
+  drop_na(opinion)
+
+draw_aggr <- draw_gss %>% 
+  group_by(issue) %>% 
+  summarise(mean_opin = weighted.mean(opinion, wgt)) 
+
+left_join(draw_aggr, 
+          gss_21_aggr %>% select(issue, true_mean_opin = mean_opin), 
+          by = "issue") %>% 
+  transmute(issue, i = i, e = mean_opin - true_mean_opin) %>% 
+  mutate(e = e*100)
+}
+
+# Use furrr package for parallel computation
+plan(multisession, workers = 5)
+
+e_21_draws <- future_map_dfr(1:500, 
+                           draw_e_21, .options = furrr_options(seed = 2000),
+                           .progress = TRUE)
+
+plan(multisession, workers = 1)
+
+gss_fc_21_e <- left_join(gss_fc_21, e_21_draws)
+
+conf_int_diff_21 <- gss_fc_21_e %>% 
+  group_by(i, last_year) %>% 
+  summarise(error_bench_diff = mean(2*e*(fc_benchmark - fc_aa)),
+            error_trends_diff = mean(2*e*(fc_trends - fc_aa))) %>% 
+  ungroup() %>% 
+  summarise(bench_diff_lwr = quantile(error_bench_diff, p = 0.025),
+            bench_diff_upr = quantile(error_bench_diff, p = 0.975),
+            trends_diff_lwr = quantile(error_trends_diff, p = 0.025),
+            trends_diff_upr = quantile(error_trends_diff, p = 0.975))
+```
+
+```{r tbl2}
+
+tbl_data <- bind_cols(accuracy_21, conf_int_diff_21) 
+
+tbl_data <- tbl_data %>% 
+  mutate(diff_benchmark = sprintf("%.1f [%.1f, %.1f]",
+                                  fc_benchmark - fc_aa,
+                                  fc_benchmark - fc_aa + bench_diff_lwr,
+                                  fc_benchmark - fc_aa + bench_diff_upr),
+         diff_trends = sprintf("%.1f [%.1f, %.1f]",
+                                  fc_trends - fc_aa,
+                                  fc_trends - fc_aa + trends_diff_lwr,
+                                  fc_trends - fc_aa + trends_diff_upr)) %>% 
+  select(fc_aa, fc_benchmark, fc_trends, diff_benchmark, diff_trends) 
+
+
+tbl_data %>% 
+  kbl(col.names = c("MSD_AA", 
+                    "MSD_Benchmark", 
+                    "MSD_Trends",
+                    "MSD_Benchmark - MSD_AA",
+                    "MSD_Trends - MSD_AA"),
+      digits = 1,
+      caption = "Table 2. 2021 point forecast accuracy assessed by the mean squared deviation (MSD) between predicted and observed public opinion in 2021.") %>% 
+  kableExtra::kable_classic()
+
+```
+
+
+
+```{r tbl3}
+
+accuracy_21_theme <- gss_fc_21 %>% 
+  mutate(n_items = ifelse(issue %in% c("spanking", "grass", "cappun", "gunlaw", "racopen"), 
+                          "single", 
+                          "multiple")) %>% 
+  group_by(n_items, theme) %>% 
+  summarise(across(c(fc_aa, fc_benchmark, fc_trends), ~mean((mean_opin - .)^2)), 
+            .groups = "drop") %>% 
+  arrange(n_items, desc(fc_benchmark)) %>% 
+  select(-n_items)
+
+accuracy_21_theme %>% 
+  kbl(col.names = c("Group", 
+                    "MSD_AA",
+                    "MSD_Benchmark", 
+                    "MSD_Trends"),
+      digits = 1,
+      caption = "Table 2. 2021 point forecast accuracy assessed by the mean squared deviation (MSD) between predicted and observed public opinion in 2021.") %>% 
+  kableExtra::kable_classic()
+
+```
+
+```{r tbl3_new_args}
+
+gss_fc_new_args_21 <- left_join(gss_fc_new_args_21, gss_themes %>% select(issue, theme))
+
+accuracy_21_theme_new <- gss_fc_new_args_21 %>% 
+  drop_na(new_aa) %>% 
+  group_by(theme) %>% 
+  summarise(fc_aa_new_args = mean((mean_opin - fc_aa)^2), 
+            .groups = "drop") 
+
+left_join(accuracy_21_theme_new, accuracy_21_theme) %>% 
+  kbl(digits = 1,
+      caption = "Table 2. 2021 point forecast accuracy assessed by the mean squared deviation (MSD) between predicted and observed public opinion in 2021.") %>% 
+  kableExtra::kable_classic()
+
+```
+
+
+
+```{r accuracy_excl}
+
+accuracy_21_excl <- gss_fc_21 %>% 
+  filter(!theme %in% c("Free speech militarist", 
+                       "Free speech racist", 
+                       "Societal treatment of African-Americans", 
+                       "Police violence")) %>% 
+ summarise(across(c(fc_aa, fc_benchmark, fc_trends), ~mean((mean_opin - .)^2)))
+
+
+gss_fc_21_e <- left_join(gss_fc_21_e, gss_themes %>% select(issue, theme))
+
+conf_int_excl_21 <- gss_fc_21_e %>% 
+  filter(!theme %in% c("Free speech militarist", 
+                       "Free speech racist", 
+                       "Societal treatment of African-Americans", 
+                       "Police violence")) %>% 
+  group_by(i, last_year) %>% 
+  summarise(error_bench_diff = mean(2*e*(fc_benchmark - fc_aa)),
+            error_trends_diff = mean(2*e*(fc_trends - fc_aa))) %>% 
+  ungroup() %>% 
+  summarise(bench_diff_lwr = quantile(error_bench_diff, p = 0.025),
+            bench_diff_upr = quantile(error_bench_diff, p = 0.975),
+            trends_diff_lwr = quantile(error_trends_diff, p = 0.025),
+            trends_diff_upr = quantile(error_trends_diff, p = 0.975))
+```
+
+```{r absl_err_excl}
+
+gss_fc_21 %>% 
+   filter(!theme %in% c("Free speech militarist", 
+                       "Free speech racist", 
+                       "Societal treatment of African-Americans", 
+                       "Police violence")) %>%
+ summarise(across(c(fc_aa, fc_benchmark, fc_trends), ~mean(abs(mean_opin - .))))
+
+```
+
+
+```{r tbl4}
+
+tbl_data <- bind_cols(accuracy_21_excl, conf_int_excl_21) 
+
+tbl_data <- tbl_data %>% 
+  mutate(diff_benchmark = sprintf("%.1f [%.1f, %.1f]",
+                                  fc_benchmark - fc_aa,
+                                  fc_benchmark - fc_aa + bench_diff_lwr,
+                                  fc_benchmark - fc_aa + bench_diff_upr),
+         diff_trends = sprintf("%.1f [%.1f, %.1f]",
+                                  fc_trends - fc_aa,
+                                  fc_trends - fc_aa + trends_diff_lwr,
+                                  fc_trends - fc_aa + trends_diff_upr)) %>% 
+  select(fc_aa, fc_benchmark, fc_trends, diff_benchmark, diff_trends) 
+
+
+tbl_data %>% 
+  kbl(col.names = c("MSD_AA", 
+                    "MSD_Benchmark", 
+                    "MSD_Trends",
+                    "MSD_Benchmark - MSD_AA",
+                    "MSD_Trends - MSD_AA"),
+      digits = 1,
+      caption = "Table 2. 2021 point forecast accuracy assessed by the mean squared deviation (MSD) between predicted and observed public opinion in 2021.") %>% 
+  kableExtra::kable_classic()
+
+```
+
 
 ### Supplementary materials
 
 ```{r suppl_table1}
 
-new_issues <- mf_data$version[mf_data$issue == "new issues"]
+new_issues <- mf_data$issue[mf_data$version == "new issues"]
   
 gss_fc %>% 
   filter(fc_year > 2018) %>% 
@@ -425,6 +669,20 @@ gss_fc %>%
 
 ```
 
+```{r suppl_table3}
+
+gss_fc_21 %>% 
+  left_join(mf_data %>% select(issue, short_label)) %>% 
+  select(theme, short_label, issue,aa, fc_benchmark, fc_trends, fc_aa, mean_opin) %>% 
+  arrange(theme) %>% 
+  kbl(col.names = c("Group", "Item", "GSS code", "AA",
+                    "Benchmark forecast", "Trends forecast", "AA forecast", "Public opinion 2021"),
+      digits = c(0, 0, 0, 2, 1, 1, 1, 1),
+      caption = "Supplementary Table 3. Forecasts with 50% prediction intervals for 2021 for the  60 GSS items (on moral issues) that were asked in the 2021 GSS.") %>% 
+  kable_classic()
+
+```
+
 ```{r suppl_fig2, fig.width = 10, fig.height = 15, fig.cap = "Supplementary Figure 2. Historical trends (black) and forecasts (purple) for 2020 to 2030 with 50% prediction intervals in the popularity of 102 moral opinions in the United States."}
 
 mf_ordered <- mf_data %>% 
@@ -453,6 +711,7 @@ pl <- gss_aggr %>%
   theme_bw()
 pl
 # ggsave("suppl_fig2.jpeg", pl, dpi = 350, width = 10, height = 15)
+# ggsave("suppl_fig2.eps", pl, width = 10, height = 15)
 
 
 ```

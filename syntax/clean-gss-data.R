@@ -2,7 +2,7 @@ library(tidyverse)
 library(haven)
 library(labelled)
 
-# The file GSS7218_R3.sav is available at ...
+# The GSS data files used in the script are available at https://gss.norc.org/get-the-data/
 
 # GSS ---------------------------------------------------------------------
 
