@@ -95,6 +95,7 @@ pl_spkhomo %>%
   theme(legend.position = c(.8, .2))
 
 # ggsave("fig1_example-issue.jpeg", width = 6, height = 4, dpi = 350)
+ggsave("fig1_example-issue.eps", width = 6, height = 4)
 
 ```
 
@@ -276,7 +277,7 @@ pl_data <- left_join(pl_data,
   mutate(short_label = fct_reorder(short_label, last_mean_opin))
          
 
-pl_data %>% 
+pl2 <- pl_data %>% 
   ggplot(aes(x = short_label, xend = short_label))+ 
   geom_segment(aes(y = last_mean_opin, yend = value, 
                    color = type), 
@@ -297,7 +298,10 @@ pl_data %>%
   scale_color_viridis_d(end = 0.85) +
   labs(x = NULL, y = "Forecast", color = NULL) 
 
+pl2
+
 #ggsave("fig2_forecast.jpeg", width = 7, height = 7, dpi = 350)
+ggsave("fig2_forecast.eps", pl2, width = 7, height = 7)
 
 ```
 
@@ -422,28 +426,6 @@ accuracy_21
 
 ```
 
-```{r accuracy_21_new_args}
-
-gss_aa_new_args_21 <- left_join(gss_aa_new_args, gss_21_aggr) %>% 
-  drop_na(mean_opin)
-
-gss_fc_new_args_21 <- gss_aa_new_args_21 %>% 
-  expand_grid(fc_year = 2021) %>% 
-  mutate(steps = (fc_year - last_year)/2,
-         fc_benchmark = last_log_odds,
-         fc_trends = last_log_odds + c_trend*steps,
-         fc_aa = last_log_odds + c_aa*steps) 
-
-gss_fc_new_args_21 <- gss_fc_new_args_21 %>% 
-  mutate(across(fc_benchmark:fc_aa, ~inv_logit(.)*100),  
-         across(c(last_mean_opin, mean_opin, mean_opin_no_wgt), ~100*.))
-
-
-gss_fc_new_args_21 %>% 
-#  group_by(fc_year) %>% 
-  summarise(across(c(fc_aa, fc_benchmark, fc_trends), ~mean((mean_opin - .)^2)))
-
-```
 
 ```{r sampling_error_21}
 
@@ -544,24 +526,6 @@ accuracy_21_theme %>%
 
 ```
 
-```{r tbl3_new_args}
-
-gss_fc_new_args_21 <- left_join(gss_fc_new_args_21, gss_themes %>% select(issue, theme))
-
-accuracy_21_theme_new <- gss_fc_new_args_21 %>% 
-  drop_na(new_aa) %>% 
-  group_by(theme) %>% 
-  summarise(fc_aa_new_args = mean((mean_opin - fc_aa)^2), 
-            .groups = "drop") 
-
-left_join(accuracy_21_theme_new, accuracy_21_theme) %>% 
-  kbl(digits = 1,
-      caption = "Table 2. 2021 point forecast accuracy assessed by the mean squared deviation (MSD) between predicted and observed public opinion in 2021.") %>% 
-  kableExtra::kable_classic()
-
-```
-
-
 
 ```{r accuracy_excl}
 
@@ -627,6 +591,74 @@ tbl_data %>%
       digits = 1,
       caption = "Table 2. 2021 point forecast accuracy assessed by the mean squared deviation (MSD) between predicted and observed public opinion in 2021.") %>% 
   kableExtra::kable_classic()
+
+```
+
+### Effect size
+
+How often we predict in the correct direction.
+
+```{r}
+
+compare_diff <- gss_fc_21 %>% 
+  transmute(issue, aa, theme,
+            actual_diff = mean_opin - last_mean_opin, 
+            expected_aa_diff = fc_aa - last_mean_opin, 
+            expected_trends_diff = fc_trends - last_mean_opin) 
+
+compare_diff %>% 
+  count(actual_diff*expected_aa_diff > 0) %>% 
+  mutate(n/sum(n))
+
+compare_diff %>% 
+  filter(!theme %in% c("Free speech militarist", 
+                       "Free speech racist", 
+                       "Societal treatment of African-Americans", 
+                       "Police violence")) %>% 
+  count(actual_diff*expected_aa_diff > 0) %>% 
+  mutate(n/sum(n))
+
+
+compare_diff %>% 
+  count(actual_diff*expected_trends_diff > 0) %>% 
+  mutate(n/sum(n))
+
+compare_diff %>% 
+  filter(!theme %in% c("Free speech militarist", 
+                       "Free speech racist", 
+                       "Societal treatment of African-Americans", 
+                       "Police violence")) %>% 
+  count(actual_diff*expected_trends_diff > 0) %>% 
+  mutate(n/sum(n))
+
+
+```
+Proportion of variance (R2) in the estimated changes that is explained by our predictions.
+
+```{r}
+
+compare_diff %>% 
+  summarise(cor(expected_aa_diff, actual_diff)^2)
+
+
+compare_diff %>% 
+  filter(!theme %in% c("Free speech militarist", 
+                       "Free speech racist", 
+                       "Societal treatment of African-Americans", 
+                       "Police violence")) %>% 
+  summarise(cor(expected_aa_diff, actual_diff)^2)
+
+compare_diff %>% 
+  summarise(cor(expected_trends_diff, actual_diff)^2)
+
+
+compare_diff %>% 
+  filter(!theme %in% c("Free speech militarist", 
+                       "Free speech racist", 
+                       "Societal treatment of African-Americans", 
+                       "Police violence")) %>% 
+  summarise(cor(expected_trends_diff, actual_diff)^2)
+
 
 ```
 
