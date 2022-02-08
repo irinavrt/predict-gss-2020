@@ -7,17 +7,16 @@ library(labelled)
 # GSS ---------------------------------------------------------------------
 
 gss_full <- read_sav("data/GSS7218_R3.sav")
-issue_list <- read_csv("data/issue-list.csv")
+issues_list <- read_csv("data/issue-list.csv")
 
-# Dropped unused issues from the issue list (not asked in 2010)
-
+# Drop issues not included in the issues list (not asked in 2010):
 gss <- gss_full %>%
   rename_all(tolower) 
 
 gss <- gss %>% 
   mutate_at(vars(hubbywk1, twoincs1, homosex1, premars1, xmarsex1), 
             remove_val_labels) %>% 
-  # combine two different wordings of the same issues
+  # Combine different wordings of the same issue:
   mutate(hubbywrk = coalesce(hubbywrk, hubbywk1),
          twoincs = coalesce(twoincs, twoincs1),
          homosex = coalesce(homosex, homosex1),
@@ -32,34 +31,33 @@ gss <- gss %>%
   mutate(wgt = wtssall*oversamp) 
 
 
-# Recoding levels that are not used
+# Re-code levels that are not used
 gss <- gss %>% 
   mutate(homosex = fct_recode(homosex, NULL = "other"),
          racopen = fct_recode(racopen, NULL = "neither"),
          sexeduc = fct_recode(sexeduc, NULL = "depends"))
 
-#Excluding years where racial questions were asked of non-blacks only 
+# Exclude years when racial questions were asked to non-blacks only: 
 for(i in c("racmar","racpush", "racopen","racdin")) {
-  gss[gss$year %in% 1972:1977,i] <- NA
+  gss[gss$year %in% 1972:1977, i] <- NA
 }
 
 gss <- gss %>% droplevels()
 
-#dichotomize variable
-
+# Dichotomize variable:
 
 dichotomize <- function(var){
-  if(min(var, na.rm = TRUE) > 1) var <- var - min(var, na.rm = TRUE) + 1
+  if(min(as.numeric(var), na.rm = TRUE) > 1) var <- as.numeric(var) - min(as.numeric(var), na.rm = TRUE) + 1
   n_categories <- n_distinct(var, na.rm = TRUE)
-  # for already binary items recode "yes" (1st level) to 1 and "no" to 0
+  # For already binary items re-code "yes" (1st level) to 1 and "no" to 0:
   if(n_categories == 2){
     return(2 - as.numeric(var))
   }
-  # if item has even number of levels recode first half of levels as 1, and second as 0
+  # If the item has an even number of levels re-code first half of levels as 1, and second as 0:
   if(n_categories %% 2 == 0){
     return(ifelse(as.numeric(var) > n_categories/2, 0, 1))
   } else {
-    # if item has odd number of levels recode the middle level to NA, first half of levels as 1, and second as 0
+    # If the item has an odd number of levels re-code the middle level as NA, first half of levels as 1, and second as 0:
     middle <- ceiling(n_categories/2)
     return(case_when(
       as.numeric(var) == middle ~ NA_real_,
@@ -75,7 +73,7 @@ gss_bin <- gss %>%
          one_of(issue_list$issue)) %>% 
   mutate(pornlaw = ifelse(pornlaw == "legal", 0 , 1), 
          paidlvdv = ifelse(as.numeric(paidlvdv) < 3, 0, 1),
-         # reverse code the items to match the AA default position
+         # Reverse code the items to match the AA default position:
          across(c(wrksch, wrkbaby), ~ case_when(
            . == "stay home" ~ 1,
            . == "work full-time" ~ 0, 
@@ -84,12 +82,13 @@ gss_bin <- gss %>%
   mutate_at(issue_list$issue[!issue_list$issue  %in% c("pornlaw", "paidlvdv", "wrksch", "wrkbaby")], 
             dichotomize)
 
-# Save 2018 sample for analysis of the sampling error
+# Save 2018 sample for analysis of the sampling error:
 gss_2018 <- gss_bin %>% 
   filter(year == 2018) %>% 
   select(id, year, wgt, abany:wrksch)
 
 write_rds(gss_2018, "data/gss-issp-individual-data-2018.rds")
+
 
 gss_bin <- gss_bin %>% 
   gather(issue, opinion, abany:wrksch) 
